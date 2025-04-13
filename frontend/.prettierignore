@@ -1,0 +1,23 @@
+# Build output
+dist
+build
+
+# Node modules
+node_modules
+
+# Environment variables
+.env
+.env.* 
+
+# Coverage reports
+coverage
+
+# System files
+.DS_Store
+
+# Lock files (optional)
+yarn.lock
+package-lock.json
+
+# Optional: ignore specific folders
+public
