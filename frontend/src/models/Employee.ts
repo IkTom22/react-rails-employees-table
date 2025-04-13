@@ -1,6 +1,9 @@
 import Department from './Department';
 import { Model, SpraypaintBase, Attr, BelongsTo } from 'spraypaint';
-const BASE_API_URL = import.meta.env.VITE_API_BASE_URL;
+
+// I have created .env and added to .gitignore though, just the testing purposes, I used the link directly.
+// const BASE_API_URL = import.meta.env.VITE_API_BASE_URL;
+const BASE_API_URL = 'http://localhost:4567';
 
 //Base class for the API communication
 @Model()
