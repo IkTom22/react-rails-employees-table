@@ -15,19 +15,12 @@ class ApplicationRecord extends SpraypaintBase {
 @Model()
 class Employee extends ApplicationRecord {
   static jsonapiType = 'employees'; // The type that matches the API endpoint
-  // static jsonApiAttributes = [
-  //   'first_name',
-  //   'last_name',
-  //   'age',
-  //   'position',
-  //   'department_id',
-  // ];
 
-  @Attr() first_name: string;
-  @Attr() last_name: string;
+  @Attr() firstName: string;
+  @Attr() lastName: string;
   @Attr() age: number;
   @Attr() position: string;
-  @Attr() department_id: number;
+  @Attr() departmentId: number;
 
   @BelongsTo() departments: Department;
 }

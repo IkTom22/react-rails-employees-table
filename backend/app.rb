@@ -64,8 +64,16 @@ class EmployeeDirectoryApp < Sinatra::Application
     context = {} 
     payload = JSON.parse(request.body.read)
     puts "PARSED PAYLOAD: #{payload.inspect}"
-    employee = EmployeeResource.build(payload["data"]["attributes"], context)
+    # Inspect the parsed attributes
+    attributes = payload['data']['attributes']
+    puts "ATTRIBUTES: #{attributes.inspect}"
+
+    # employee = EmployeeResource.build(attributes, context)
+    employee = EmployeeResource.build(attributes, context)
+
+    puts "Employee built: #{employee.inspect}"
     # employee = EmployeeResource.build(payload, context)
+  
     puts "Employee built: #{employee.inspect}"
 
     if employee.errors.any?

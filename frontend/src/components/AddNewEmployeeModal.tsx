@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-// import Employee from '../models/Employee';
+import Employee from '../models/Employee';
 import {
   Dialog,
   DialogContent,
-  // DialogFooter,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -24,7 +24,7 @@ import { IoClose } from 'react-icons/io5';
 
 // I have created .env and added to .gitignore though, just the testing purposes, I used the link directly.
 // const BASE_API_URL = import.meta.env.VITE_API_BASE_URL;
-const BASE_API_URL = 'http://localhost:4567';
+// const BASE_API_URL = 'http://localhost:4567';
 const NewEmployeeModal = (props: {
   allDepartments: DepartmentAttributes[];
 }) => {
@@ -64,8 +64,8 @@ const NewEmployeeModal = (props: {
   useEffect(() => {
     if (errorCreation) {
       setTimeout(() => {
-        setErrorMessage('');
-      }, 3000);
+        setErrorCreation('');
+      }, 5000);
     }
   }, [errorCreation]);
 
@@ -78,39 +78,33 @@ const NewEmployeeModal = (props: {
       ? parseInt(relatedDepartment.id, 10)
       : null;
 
+    // const payload = {
+    //   date: {
+    //     type: 'employees',
+    //     attributes: {
+    //       first_name: firstName,
+    //       last_name: lastName,
+    //       age: parseInt(age, 10),
+    //       position: position,
+    //       department_id: departmentId,
+    //     },
+    //   },
+    // };
     const payload = {
-      date: {
-        type: 'employees',
-        attributes: {
-          first_name: firstName,
-          last_name: lastName,
-          age: parseInt(age, 10),
-          position: position,
-          department_id: departmentId,
-        },
-      },
+      first_name: firstName,
+      last_name: lastName,
+      age: parseInt(age, 10),
+      position: position,
+      department_id: departmentId,
     };
-
     try {
       console.log('employeeData: ', payload);
-      const response = await fetch(`${BASE_API_URL}/api/v1/employees`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/vnd.api+json',
-        },
-        body: JSON.stringify(payload),
-      });
-      const result = await response.json();
-      if (response.ok) {
-        console.log('Employee created:', result);
-      } else {
-        console.error('Error creating employee:', result.errors || result);
-      }
-      // const newEmployee = new Employee(payload);
-      // await newEmployee.save();
-      // console.log('created employee: ', newEmployee);
-      // console.log(newEmployee.first_name);
-      // console.log(newEmployee.department_id);
+
+      const newEmployee = new Employee(payload);
+      await newEmployee.save();
+      console.log('created employee: ', newEmployee);
+      console.log(newEmployee.firstName);
+      console.log(newEmployee.departmentId);
       // document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     } catch (error) {
       setErrorCreation(
@@ -139,7 +133,7 @@ const NewEmployeeModal = (props: {
         {errorCreation ? (
           <div>{errorCreation}</div>
         ) : (
-          <form className="grid gap-4 py-2" onSubmit={handleSubmit}>
+          <form className="grid gap-4 py-2">
             <div className="flex flex-col relative">
               <label htmlFor="first-name" className="text-sm">
                 First name
@@ -260,14 +254,19 @@ const NewEmployeeModal = (props: {
                 </SelectContent>
               </Select>
             </div>
+          </form>
+        )}
+        <DialogFooter>
+          {!errorCreation && (
             <button
               type="submit"
+              onClick={handleSubmit}
               className="px-3 py-2 rounded-md border-2 border-slate-800 bg-green-200 cursor-pointer hover:bg-green-300 transition ease-in-out duration-200"
             >
               Submit
             </button>
-          </form>
-        )}
+          )}
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

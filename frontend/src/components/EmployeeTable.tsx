@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { debounce } from 'lodash';
 import {
   useReactTable,
   getCoreRowModel,
@@ -69,7 +70,6 @@ const EmployeeTable = () => {
 
   console.log(errorMessage);
   console.log('totalEmployeeNum: ', totalEmployeeNum);
-  //    const [pageSize, setPageSize] = uesState(10)
   const pageSize = 10;
 
   const goToPreviousPage = () => {
@@ -105,17 +105,26 @@ const EmployeeTable = () => {
     setErrorMessage(null);
     try {
       console.log('fetching data.....');
-      const response = await Employee.where({
-        first_name: searchFirstNameTerm,
-        last_name: searchLastNameTerm,
-      })
-        .where({ department_name: selectedDepartment })
-        .order(sort)
-        .page(pageIndex)
+      let query = Employee.page(pageIndex)
         .per(pageSize)
         .stats({ total: ['count'] })
-        .includes('department')
-        .all();
+        .includes('department');
+
+      if (searchFirstNameTerm) {
+        query = query.where({ first_name: searchFirstNameTerm });
+      }
+      if (searchLastNameTerm) {
+        query = query.where({ last_name: searchLastNameTerm });
+      }
+      if (selectedDepartment) {
+        query = query.where({ department_name: selectedDepartment });
+      }
+      if (sort && Object.keys(sort).length > 0) {
+        query = query.order(sort);
+      }
+
+      const response = await query.all();
+
       console.log('response---------', response);
 
       const employeeCount = response['_raw_json'].meta.stats?.total?.count;
@@ -157,9 +166,10 @@ const EmployeeTable = () => {
     }
   };
 
+  const debouceFetchEmployees = debounce(fetchEmployees, 300);
   //Fetchdata from backend
   useEffect(() => {
-    fetchEmployees();
+    debouceFetchEmployees();
   }, [
     pageIndex,
     pageSize,
