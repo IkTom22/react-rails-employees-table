@@ -167,8 +167,6 @@ const EmployeeTable = () => {
     searchFirstNameTerm,
     searchLastNameTerm,
     selectedDepartment,
-    totalPages,
-    totalEmployeeNum,
   ]);
   useEffect(() => {
     setPageIndex(1);
