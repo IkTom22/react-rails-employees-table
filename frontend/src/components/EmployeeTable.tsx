@@ -110,6 +110,9 @@ const EmployeeTable = () => {
         .stats({ total: ['count'] })
         .includes('department');
 
+      // if (pageIndex && pageIndex > 0) {
+      //   query = query.page(pageIndex).per(pageSize);
+      // }
       if (searchFirstNameTerm) {
         query = query.where({ first_name: searchFirstNameTerm });
       }
