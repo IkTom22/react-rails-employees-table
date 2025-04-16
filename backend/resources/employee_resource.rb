@@ -20,36 +20,94 @@ class EmployeeResource < Graphiti::Resource
     Employee.all
   end
 
-  def create(attributes)
-    permitted = attributes.slice(:first_name, :last_name, :age, :position, :department_id) if attributes
-    employee = Employee.new(permitted)
+  # def create(attributes)
+  #   permitted = attributes.slice(:first_name, :last_name, :age, :position, :department_id) if attributes
+  #   employee = Employee.new(permitted)
     
-    # Check if an employee with the same full name already exists in the same department
-    if Employee.exists?(
-      first_name: attributes[:first_name],
-      last_name: attributes[:last_name],
-      department_id: attributes[:department_id]
-    )
-      # Add error if duplicate found
-      employee.errors.add(:base, "An employee with that full name already exists in this department.")
-      return employee
-    end
+  #   # Check if an employee with the same full name already exists in the same department
+  #   if Employee.exists?(
+  #     first_name: attributes[:first_name],
+  #     last_name: attributes[:last_name],
+  #     department_id: attributes[:department_id]
+  #   )
+  #     # Add error if duplicate found
+  #     employee.errors.add(:base, "An employee with that full name already exists in this department.")
+  #     return employee
+  #   end
 
-    unless employee.valid?
-      employee.errors.add(:base, "Employee data is invalid.")
-      return employee
-    end
+  #   unless employee.valid?
+  #     employee.errors.add(:base, "Employee data is invalid.")
+  #     return employee
+  #   end
 
-    # Save the employee if valid and return the employee object
-    if employee.save
-      employee
-    else
-      raise Graphiti::Errors::RecordInvalid.new(employee)
-      employee.errors.add(:base, "Employee could not be saved.")
-      return employee
-    end
+  #   # Save the employee if valid and return the employee object
+  #   if employee.save
+  #     employee
+  #   else
+  #     raise Graphiti::Errors::RecordInvalid.new(employee)
+  #     employee.errors.add(:base, "Employee could not be saved.")
+  #     return employee
+  #   end
+  # end
+  # define it as a class method using self.
+  def self.create_employee(attributes) 
+    puts "attributes: #{attributes.inspect}"
+    # "If payload is a hash, then convert all of its keys to symbols and store the result in attributes."
+    # payload = {
+    #   "first_name" => "May",
+    #   "last_name" => "Tuesday"
+    #   }
+    # to
+    # {
+    #   first_name: "May",
+    #   last_name: "Tuesday"
+    # }
+
+    convertedAttributes = attributes.transform_keys(&:to_sym) if attributes.is_a?(Hash)
+    puts "attirubutes..? #{convertedAttributes}"
+    permitted = convertedAttributes.slice(:first_name, :last_name, :age, :position, :department_id)
+    puts "permitted..? #{permitted}"
+    employee = Employee.new(permitted)
+    # Employee.create!(attributes)
+    # Normalize names for duplicate check
+    # first_name = employee.first_name.to_s.strip.downcase
+    # last_name = employee.last_name.to_s.strip.downcase
+    # department_id = employee.department_id
+  
+    # # Check if an employee with the same full name exists in the same department
+    # if Employee.where(
+    #   "LOWER(TRIM(first_name)) = ? AND LOWER(TRIM(last_name)) = ? AND department_id = ?",
+    #   first_name,
+    #   last_name,
+    #   department_id
+    # ).exists?
+    #   employee.errors.add(:base, "An employee with that full name already exists in this department.")
+    #   return employee
+    # end
+  
+    # Validate the employee object
+    # unless employee.valid?
+
+    #   employee.errors.add(:base, "Employee data is invalid.")
+    #   return employee
+    # end
+  
+    begin
+      if employee.save
+        return employee
+      else
+        puts "❌ Failed to save employee!"
+        puts employee.errors.full_messages.inspect
+        raise Graphiti::Errors::RecordInvalid.new(employee)
+      end
+      rescue => e
+        puts "Exception: #{e.class} - #{e.message}"
+        puts e.backtrace
+        raise e # Re-raise the exception after logging it
+    end  
   end
-
+  
+  
   # def self.default_sort
   #   [{ first_name: :asc }]
   # end

@@ -15,9 +15,6 @@ class ApplicationResource < Graphiti::Resource
   self.validate_endpoints = false
 end
 
-# Graphiti.config.context_for_endpoint = ->(path, action) { 
-#   "#{ApplicationResource.base_url}#{path}" 
-# }
 
   # Graphiti.config.context_for_endpoint = ->(path, action) { {} }
 Graphiti.config.context_for_endpoint = ->(path, action) { nil }
@@ -61,24 +58,17 @@ class EmployeeDirectoryApp < Sinatra::Application
   end
 
   post '/api/v1/employees' do
-    # context = {} 
     payload = JSON.parse(request.body.read)
     puts "PARSED PAYLOAD: #{payload.inspect}"
+    attributes = payload["data"]["attributes"]
     # Inspect the parsed attributes
-    attributes = payload['data']['attributes']
-    puts "ATTRIBUTES: #{attributes.inspect}"
-
-    # employee = EmployeeResource.build(attributes, context)
-    employee = EmployeeResource.build(attributes)
-
-    puts "Employee built: #{employee.inspect}"
-    # employee = EmployeeResource.build(payload, context)
-  
+    employee = EmployeeResource.create_employee(attributes)
+   
     puts "Employee built: #{employee.inspect}"
     
     if employee.save
       status 201
-      employee.to_jsonapi
+      employee.to_json
     else 
       status 422
       { errors: employee.errors.full_messages }.to_json

@@ -78,18 +78,6 @@ const NewEmployeeModal = (props: {
       ? parseInt(relatedDepartment.id, 10)
       : null;
 
-    // const payload = {
-    //   date: {
-    //     type: 'employees',
-    //     attributes: {
-    //       first_name: firstName,
-    //       last_name: lastName,
-    //       age: parseInt(age, 10),
-    //       position: position,
-    //       department_id: departmentId,
-    //     },
-    //   },
-    // };
     const payload = {
       first_name: firstName,
       last_name: lastName,
@@ -105,7 +93,6 @@ const NewEmployeeModal = (props: {
       console.log('created employee: ', newEmployee);
       console.log(newEmployee.firstName);
       console.log(newEmployee.departmentId);
-      // document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     } catch (error) {
       setErrorCreation(
         `Something went wrong with createing new employee: ${error}`
