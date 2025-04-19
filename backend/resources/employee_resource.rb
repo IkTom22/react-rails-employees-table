@@ -45,24 +45,28 @@ class EmployeeResource < Graphiti::Resource
 
     if existing 
       employee = Employee.new(permitted)
-      employee.errors.add(:base, "An employee with that full name already exists in this department.")
-      return employee
+      employee.errors.add(:base, "An employee: #{permitted[:first_name]} #{permitted[:last_name]} already exists in this department.")
+      return { ok: false, errors: employee.errors.full_messages }
     end
   
     # Create and validate employee
     employee = Employee.new(permitted)
     unless employee.valid?
       puts "Validation errors: #{employee.errors.full_messages.inspect}"
-      return employee
+     
+      return {ok: false,  errors: employee.errors.full_messages }
     end
   
     begin
       if employee.save
         puts "Employee successfully created!"
-        return employee
+        return {ok: true, data: employee}
+        
       else
         puts "Failed to save employee: #{employee.errors.full_messages.inspect}"
         raise Graphiti::Errors::RecordInvalid.new(employee)
+       
+        return { ok: false, errors: employee.errors.full_messages }
       end
     rescue => e
       puts "Exception: #{e.class} - #{e.message}"

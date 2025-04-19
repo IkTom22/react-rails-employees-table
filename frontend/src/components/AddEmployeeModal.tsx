@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import Employee from '../models/Employee';
+// import Employee from '../models/Employee';
 import {
   Select,
   SelectContent,
@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from './ui/select';
+import { useToast } from '../hooks/use-toast';
 
 import { DepartmentAttributes } from '@/type';
 
@@ -18,6 +19,7 @@ interface PropsType {
   toggleModal: () => void;
   allDepartments: DepartmentAttributes[];
 }
+const BASE_API_URL = 'http://localhost:4567';
 const AddEmployeeModal = (props: PropsType) => {
   const { allDepartments, toggleModal } = props;
   const [firstName, setFirstName] = useState('');
@@ -26,8 +28,8 @@ const AddEmployeeModal = (props: PropsType) => {
   const [position, setPosition] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const [errorCreation, setErrorCreation] = useState('');
-  const [successCreation, setSuccessCreation] = useState('');
+
+  const { toast } = useToast();
 
   const handleAgeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -53,22 +55,6 @@ const AddEmployeeModal = (props: PropsType) => {
     }
   }, [errorMessage]);
 
-  useEffect(() => {
-    if (errorCreation) {
-      setTimeout(() => {
-        setErrorCreation('');
-      }, 5000);
-    }
-  }, [errorCreation]);
-
-  useEffect(() => {
-    if (successCreation) {
-      setTimeout(() => {
-        setSuccessCreation('');
-      }, 5000);
-    }
-  });
-
   const handleSubmit = async () => {
     console.log('submit clicked!');
     const relatedDepartment = allDepartments.find(
@@ -79,38 +65,57 @@ const AddEmployeeModal = (props: PropsType) => {
       : null;
 
     const payload = {
-      first_name: firstName,
-      last_name: lastName,
-      age: parseInt(age, 10),
-      position: position,
-      department_id: departmentId,
+      data: {
+        type: 'employees',
+        attributes: {
+          first_name: firstName,
+          last_name: lastName,
+          age: parseInt(age),
+          position: position,
+          department_id: departmentId,
+        },
+      },
     };
 
     try {
-      console.log('employeeData: ', payload);
-      const newEmployee = new Employee(payload);
-      console.log('newEmployee: ', newEmployee);
+      const response = await fetch(`${BASE_API_URL}/api/v1/employees`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/vnd.api+json',
+          Accept: 'application/vnd.api+json',
+        },
+        body: JSON.stringify(payload),
+      });
 
-      console.log('newEmployee: ', newEmployee);
-      setSuccessCreation(
-        `New employee ${newEmployee.firstName} ${newEmployee.lastName} is created!`
-      );
-      console.log(
-        `New employee ${newEmployee.firstName} ${newEmployee.lastName} is created!`
-      );
-      setFirstName('');
-      setLastName('');
-      setAge('');
-      setPosition('');
-      setSelectedDepartment('');
-      toggleModal();
-      await newEmployee.save();
-    } catch (error) {
-      setErrorCreation(`Something went wrong... Please try again.`);
-      console.error(
-        'something went wrong with createing new employee --- ',
-        error
-      );
+      const data = await response.json();
+      console.log('json..? ', data);
+
+      if (data.status && data.status === 422) {
+        // Handle validation or server errors
+        toast({
+          title: 'Something went wrong',
+          description: data?.errors[0],
+        });
+      } else {
+        // Success
+        toast({
+          title: 'Success!',
+          description: `A new employee: ${data.first_name} ${data.last_name} is created.`,
+        });
+        // Clear form
+        setFirstName('');
+        setLastName('');
+        setAge('');
+        setPosition('');
+        setSelectedDepartment('');
+        toggleModal();
+      }
+    } catch (err) {
+      console.error('Network or unexpected error', err);
+      toast({
+        title: 'Unexpected error',
+        description: 'Something went wrong. Please try again.',
+      });
     }
   };
 

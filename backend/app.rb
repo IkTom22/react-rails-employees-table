@@ -74,15 +74,16 @@ class EmployeeDirectoryApp < Sinatra::Application
     puts "PARSED PAYLOAD: #{payload.inspect}"
     attributes = payload["data"]["attributes"]
     # Inspect the parsed attributes
-    employee = EmployeeResource.create(attributes)
-    puts "Employee built: #{employee.inspect}"
-    
-    if employee.persisted?
+    result = EmployeeResource.create(attributes)
+    puts "Employee result: #{result.inspect}"
+
+
+    if result[:ok]
       status 201
-      employee.to_json
-    else 
+      result[:data].to_json
+    else
       status 422
-      { errors: employee.errors.full_messages }.to_json
-    end  
+      { status: status, errors: result[:errors] }.to_json
+    end
   end
 end

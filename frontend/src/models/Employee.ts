@@ -11,7 +11,6 @@ class ApplicationRecord extends SpraypaintBase {
   static baseUrl = BASE_API_URL;
   static apiNamespace = '/api/v1';
 }
-
 @Model()
 class Employee extends ApplicationRecord {
   static jsonapiType = 'employees'; // The type that matches the API endpoint
@@ -23,5 +22,12 @@ class Employee extends ApplicationRecord {
   @Attr() departmentId: number;
 
   @BelongsTo() departments: Department;
+
+  get errorMessages(): string[] {
+    if (!this.errors) return [];
+    return Object.entries(this.errors).flatMap(
+      ([field, errs]) => `${field} ${errs}`
+    );
+  }
 }
 export default Employee;
