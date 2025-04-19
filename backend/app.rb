@@ -57,22 +57,32 @@ class EmployeeDirectoryApp < Sinatra::Application
     employee.to_jsonapi
   end
 
+  delete '/api/v1/employees/:id' do
+    employee = EmployeeResource.find(id: params[:id]).data
+    if employee 
+      employee.destroy
+      status 204
+      body nil
+    else 
+      status 404
+      json error: "Employee not found"  
+    end
+  end
+    
   post '/api/v1/employees' do
     payload = JSON.parse(request.body.read)
     puts "PARSED PAYLOAD: #{payload.inspect}"
     attributes = payload["data"]["attributes"]
     # Inspect the parsed attributes
-    employee = EmployeeResource.create_employee(attributes)
-   
+    employee = EmployeeResource.create(attributes)
     puts "Employee built: #{employee.inspect}"
     
-    if employee.save
+    if employee.persisted?
       status 201
       employee.to_json
     else 
       status 422
       { errors: employee.errors.full_messages }.to_json
     end  
-  
   end
 end

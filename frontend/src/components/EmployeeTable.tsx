@@ -16,7 +16,8 @@ import Employee from '../models/Employee';
 import Department from '../models/Department';
 
 import SortButton from './SortButton';
-import AddNewEmployeeModal from './AddNewEmployeeModal';
+// import AddNewEmployeeModal from './AddNewEmployeeModal';
+import AddEmployeeModal from './AddEmployeeModal';
 import {
   CgChevronLeftR,
   CgChevronRightR,
@@ -24,6 +25,7 @@ import {
   CgPushChevronRight,
 } from 'react-icons/cg';
 import { IoClose } from 'react-icons/io5';
+import { RiUserAddLine } from 'react-icons/ri';
 import { CgSearchLoading, CgSearch, CgCloseR } from 'react-icons/cg';
 
 const columnHelper = createColumnHelper<EmployeeType>();
@@ -67,6 +69,8 @@ const EmployeeTable = () => {
   const [pageIndex, setPageIndex] = useState(1);
   const [toggleSearch, setToggleSearch] = useState(false);
   const [showDepartments, setShowDepartments] = useState(false);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   console.log(errorMessage);
   console.log('totalEmployeeNum: ', totalEmployeeNum);
@@ -237,14 +241,30 @@ const EmployeeTable = () => {
     setShowDepartments(!showDepartments);
     setSelectedDepartment('');
   };
-
+  const toggleModal = () => {
+    setIsModalOpen(!isModalOpen);
+  };
+  console.log('employees: ==== ', employees);
   return (
     <div className="w-full mx-outo mt-8">
       {/* Search bar */}
       <div className="w-full flex justify-between mb-4">
         <div className={`flex gap-3 items-end ${toggleSearch && '-mt-[20px]'}`}>
           <div>
-            <AddNewEmployeeModal allDepartments={allDepartments} />
+            {!isModalOpen ? (
+              <button
+                onClick={toggleModal}
+                className="p-2 rounded-sm bg-orange-200 border-2 border-slate-800"
+              >
+                <RiUserAddLine />
+              </button>
+            ) : (
+              <AddEmployeeModal
+                allDepartments={allDepartments}
+                toggleModal={toggleModal}
+              />
+            )}
+            {/* <AddNewEmployeeModal allDepartments={allDepartments} /> */}
           </div>
           {!toggleSearch ? (
             <button

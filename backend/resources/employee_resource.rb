@@ -20,97 +20,62 @@ class EmployeeResource < Graphiti::Resource
     Employee.all
   end
 
-  # def create(attributes)
-  #   permitted = attributes.slice(:first_name, :last_name, :age, :position, :department_id) if attributes
-  #   employee = Employee.new(permitted)
-    
-  #   # Check if an employee with the same full name already exists in the same department
-  #   if Employee.exists?(
-  #     first_name: attributes[:first_name],
-  #     last_name: attributes[:last_name],
-  #     department_id: attributes[:department_id]
-  #   )
-  #     # Add error if duplicate found
-  #     employee.errors.add(:base, "An employee with that full name already exists in this department.")
-  #     return employee
-  #   end
-
-  #   unless employee.valid?
-  #     employee.errors.add(:base, "Employee data is invalid.")
-  #     return employee
-  #   end
-
-  #   # Save the employee if valid and return the employee object
-  #   if employee.save
-  #     employee
-  #   else
-  #     raise Graphiti::Errors::RecordInvalid.new(employee)
-  #     employee.errors.add(:base, "Employee could not be saved.")
-  #     return employee
-  #   end
-  # end
   # define it as a class method using self.
-  def self.create_employee(attributes) 
-    puts "attributes: #{attributes.inspect}"
-    # "If payload is a hash, then convert all of its keys to symbols and store the result in attributes."
-    # payload = {
-    #   "first_name" => "May",
-    #   "last_name" => "Tuesday"
-    #   }
-    # to
-    # {
-    #   first_name: "May",
-    #   last_name: "Tuesday"
-    # }
+  def self.create(attributes)
+    puts "Raw attributes: #{attributes.inspect}"
+  
+    # Convert string keys to symbols if needed
+    attrs = attributes.is_a?(Hash) ? attributes.transform_keys(&:to_sym) : attributes
+    puts "Converted attributes: #{attrs.inspect}"
+  
+    # Permit only relevant fields
+    permitted = attrs.slice(:first_name, :last_name, :age, :position, :department_id)
+    puts "Permitted attributes: #{permitted.inspect}"
+  
+    # Normalize for duplicate check
+    first_name = permitted[:first_name].to_s.strip.downcase
+    last_name  = permitted[:last_name].to_s.strip.downcase
+    dept_id    = permitted[:department_id]
+    puts "first_name: #{first_name}"
+    # Duplicate check
+    existing = Employee.where(
+      "LOWER(TRIM(first_name)) = ? AND LOWER(TRIM(last_name)) = ? AND department_id = ?",
+      first_name, last_name, dept_id
+    ).first
 
-    convertedAttributes = attributes.transform_keys(&:to_sym) if attributes.is_a?(Hash)
-    puts "attirubutes..? #{convertedAttributes}"
-    permitted = convertedAttributes.slice(:first_name, :last_name, :age, :position, :department_id)
-    puts "permitted..? #{permitted}"
+    if existing 
+      employee = Employee.new(permitted)
+      employee.errors.add(:base, "An employee with that full name already exists in this department.")
+      return employee
+    end
+  
+    # Create and validate employee
     employee = Employee.new(permitted)
-    # Employee.create!(attributes)
-    # Normalize names for duplicate check
-    # first_name = employee.first_name.to_s.strip.downcase
-    # last_name = employee.last_name.to_s.strip.downcase
-    # department_id = employee.department_id
-  
-    # # Check if an employee with the same full name exists in the same department
-    # if Employee.where(
-    #   "LOWER(TRIM(first_name)) = ? AND LOWER(TRIM(last_name)) = ? AND department_id = ?",
-    #   first_name,
-    #   last_name,
-    #   department_id
-    # ).exists?
-    #   employee.errors.add(:base, "An employee with that full name already exists in this department.")
-    #   return employee
-    # end
-  
-    # Validate the employee object
-    # unless employee.valid?
-
-    #   employee.errors.add(:base, "Employee data is invalid.")
-    #   return employee
-    # end
+    unless employee.valid?
+      puts "Validation errors: #{employee.errors.full_messages.inspect}"
+      return employee
+    end
   
     begin
       if employee.save
+        puts "Employee successfully created!"
         return employee
       else
-        puts "❌ Failed to save employee!"
-        puts employee.errors.full_messages.inspect
+        puts "Failed to save employee: #{employee.errors.full_messages.inspect}"
         raise Graphiti::Errors::RecordInvalid.new(employee)
       end
-      rescue => e
-        puts "Exception: #{e.class} - #{e.message}"
-        puts e.backtrace
-        raise e # Re-raise the exception after logging it
-    end  
+    rescue => e
+      puts "Exception: #{e.class} - #{e.message}"
+      puts e.backtrace
+      raise e
+    end
   end
+
+
   
-  
-  # def self.default_sort
-  #   [{ first_name: :asc }]
-  # end
+  def self.default_sort
+    [{ first_name: :asc }]
+  end
  
   # def apply_sort(scope, attribute, direction)
   #   puts "apply_sort scope class: #{scope.class}"
